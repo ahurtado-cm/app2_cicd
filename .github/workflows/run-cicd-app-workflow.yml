@@ -11,6 +11,7 @@ jobs:
   run_backend_deploy:
     outputs:
       tunnel-url: ${{ steps.expose-tunnel.outputs.tunnel-url }}    
+      ngrok-process-id: ${{ steps.expose-tunnel.outputs.ngrok-process-id }}
     runs-on: ubuntu-latest
     steps: 
       - name: backend-steps
@@ -31,15 +32,27 @@ jobs:
           ngrok_authtoken: ${{ inputs.NGROK_AUTHTOKEN }}
           tunnel_type: http
           save_url_to_filename: tunnelURL.md        
-  frontend_deploy:
-    runs-on: macos-latest
-    needs: run_backend_deploy
+  # run_frontend_deploy:
+  #   runs-on: macos-latest
+  #   needs: run_backend_deploy
+  #   steps:
+  #     - name: frontend-steps
+  #       run: |
+  #         echo 'running-frontend...'
+  #       shell: bash
+  #     - name: check local wget
+  #       # if: ${{ contains(github.event.pull_request.labels.*.name, 'mobile') && github.ref_name != 'main' }}
+  #       run: |
+  #         wget -S -O - ${{ needs.run_backend_deploy.outputs.tunnel-url }}/api/docs    
+  close_backend_deploy:
+    runs-on: ubuntu-latest
+    needs: run_backend_deploy #run_frontend_deploy
     steps:
-      - name: frontend-steps
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          path: garden
+
+      - name: Close Tunnel
         run: |
-          echo 'running-frontend...'
-        shell: bash
-      - name: check local wget
-        # if: ${{ contains(github.event.pull_request.labels.*.name, 'mobile') && github.ref_name != 'main' }}
-        run: |
-          wget -S -O - ${{ needs.run_backend_deploy.outputs.tunnel-url }}/api/docs    
+          kill -9 ${{ needs.run_backend_deploy.outputs.ngrok-process-id }}
