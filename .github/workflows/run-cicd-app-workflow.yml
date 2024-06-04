@@ -1,0 +1,45 @@
+name: ci-flow
+on: 
+  workflow_call:
+    inputs:
+      NGROK_AUTHTOKEN:
+        type: string
+        description: "[mobile] tunneling auth token for ngrok service" # TODO: add to secrets
+        required: false
+        default: 2gq96jZrxSrGayiUfKZh2kWQ7kC_7KozYbtC48pnrwxVTtjyk    
+jobs:
+  run_backend_deploy:
+    outputs:
+      tunnel-url: ${{ steps.expose-tunnel.outputs.tunnel-url }}    
+    runs-on: ubuntu-latest
+    steps: 
+      - name: backend-steps
+        run: |
+          echo 'runnung backend....'
+        shell: bash
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          path: garden        
+      - name: 4 expose-tunnel
+        # if: ${{ contains(github.event.pull_request.labels.*.name, 'mobile') && github.ref_name != 'main' }}
+        uses: ./garden/.github/actions/ngrok-tunnel-action
+        id: expose-tunnel
+        with:
+          timeout: 1h
+          port: '8001'
+          ngrok_authtoken: ${{ inputs.NGROK_AUTHTOKEN }}
+          tunnel_type: http
+          save_url_to_filename: tunnelURL.md        
+  frontend_deploy:
+    runs-on: macos-latest
+    needs: run_backend_deploy
+    steps:
+      - name: frontend-steps
+        run: |
+          echo 'running-frontend...'
+        shell: bash
+      - name: check local wget
+        # if: ${{ contains(github.event.pull_request.labels.*.name, 'mobile') && github.ref_name != 'main' }}
+        run: |
+          wget -S -O - ${{ needs.run_backend_deploy.outputs.tunnel-url }}/api/docs    
