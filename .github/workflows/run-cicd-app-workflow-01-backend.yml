@@ -1,0 +1,61 @@
+name: ci-backend-flow
+on: 
+  workflow_call:
+    inputs:
+      NGROK_AUTHTOKEN:
+        type: string
+        description: "[mobile] tunneling auth token for ngrok service" # TODO: add to secrets
+        required: false
+        default: 2gq96jZrxSrGayiUfKZh2kWQ7kC_7KozYbtC48pnrwxVTtjyk    
+    secrets:
+      PAT_TOKEN: 
+        required: true
+jobs:
+  run_backend_deploy:
+    outputs:
+      tunnel-url: ${{ steps.expose-tunnel.outputs.tunnel-url }}    
+      ngrok-process-id: ${{ steps.expose-tunnel.outputs.ngrok-process-id }}      
+    runs-on: ubuntu-latest
+    # permissions:
+    #   contents: write
+    steps: 
+      - name: backend-steps
+        run: |
+          echo 'runnung backend....'
+        shell: bash
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          path: garden        
+      - name: 4 expose-tunnel
+        # if: ${{ contains(github.event.pull_request.labels.*.name, 'mobile') && github.ref_name != 'main' }}
+        uses: ./garden/.github/actions/ngrok-tunnel-action
+        id: expose-tunnel
+        with:
+          timeout: 1h
+          port: '8001'
+          ngrok_authtoken: ${{ inputs.NGROK_AUTHTOKEN }}
+          tunnel_type: http
+          save_url_to_filename: tunnelURL.md    
+      - name: mobile-workflow Dispatch 
+        uses: peter-evans/repository-dispatch@v3 # benc-uk/workflow-dispatch@v1 # peter-evans/repository-dispatch@v2
+        with:
+          # repository: 'ahurtado-cm/app2_cicd'
+          event-type: run-flutter-tests
+          client-payload: |-
+            { "ngrok-process-id": "${{ steps.expose-tunnel.outputs.ngrok_process_id }}", 
+              "tunnel-url": "${{steps.expose-tunnel.outputs.tunnel-url}}" 
+            }
+          token: ${{secrets.PAT_TOKEN}} # ${{ secrets.GITHUB_TOKEN }} # ${{ secrets.PAT_TOKEN }} # 
+
+      # - name: Dispatch second workflow vía API (v¿run-cicd-app-workflow-02-frontend.yml/)
+      #   run: |
+      #     curl -X POST \
+      #       -H "Accept: application/vnd.github.v3+json" \
+      #       -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+      #       https://api.github.com/repos/ahurtado-cm/app2_cicd/actions/workflows/dispatches \
+      #       -d '{"ref":"main"}'
+
+      - name: continue MaxTimeout
+        run: |
+          timeout 1h sleep 7200 # Stop on whichever we reach first (30m or 2hour sleep).
