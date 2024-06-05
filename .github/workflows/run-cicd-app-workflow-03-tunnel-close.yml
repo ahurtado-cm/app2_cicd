@@ -1,0 +1,16 @@
+name: ci-tunnel-close-flow
+
+on:
+  repository_dispatch:
+    types: [ngrok-stop]
+jobs:
+  ngrok-stop-job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Stop ngrok
+        run: |
+          kill ${{ github.event.client_payload.ngrok_process_id }}
+          echo "ngrok stopped"
+

@@ -1,0 +1,31 @@
+name: ci-frontend-mobile-flow
+# env:
+#   PAT_TOKEN: ${{ secrets.PERSONAL2 }} # ${{ secrets.GITHUB_TOKEN }}
+
+on: 
+  repository_dispatch:
+    types: [run-flutter-tests]
+    # inputs:
+    #   tunnel-url: 
+    #     type: string
+    #     required: true
+jobs:
+  run_frontend_deploy:
+    runs-on: macos-latest
+    # permissions:
+    #   contents: write  # permissions to post into the repo
+    steps:
+      - name: frontend-steps
+        run: |
+          echo 'running-frontend...'
+        shell: bash
+      - name: check local wget
+        # if: ${{ contains(github.event.pull_request.labels.*.name, 'mobile') && github.ref_name != 'main' }}
+        run: |
+          wget -S -O - ${{ github.event.client_payload.tunnel-url }}/api/docs    
+      - name: ngrok-stop Dispatch
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.PERSONAL2 }} # ${{ secrets.PAT_TOKEN }} #
+          event-type: ngrok-stop
+          client-payload: '{"ngrok_process_id": "${{ github.event.client_payload.ngrok_process_id }}"}'

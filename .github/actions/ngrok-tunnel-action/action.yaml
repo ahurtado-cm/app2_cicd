@@ -50,7 +50,7 @@ runs:
     - id: print-tunnel-url
       run: echo "::set-output name=tunnel-url::$( curl http://127.0.0.1:4040/api/tunnels | jq -r ".tunnels[0].public_url" )"
       shell: bash      
-    - run: echo ${{ steps.print-tunnel-url.outputs.tunnel-url }}
+    - run: echo ${{ steps.print-tunnel-url.outputs.tunnel-url }} - ${{ steps.ngrok.outputs.NGROK_PROCESS_ID }}
       shell: bash
     
     - if: "${{ inputs.save_url_to_filename != '' }}"

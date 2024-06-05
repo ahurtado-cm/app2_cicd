@@ -4,6 +4,9 @@ on:
   pull_request:
     branches:
       - main
+    
 jobs:
   backend_deploy:
-    uses: ./.github/workflows/run-cicd-app-workflow.yml
+    uses: ./.github/workflows/run-cicd-app-workflow-01-backend.yml
+    secrets:
+      PAT_TOKEN: ${{secrets.PERSONAL_2}} # ${{secrets.PERSONAL_RELEASE_TOKEN}} # ${{secrets.GITHUB_TOKEN}}
