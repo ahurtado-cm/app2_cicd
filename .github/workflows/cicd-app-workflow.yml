@@ -3,10 +3,12 @@ on:
   workflow_dispatch:
   pull_request:
     branches:
-      - main
+      - 'chore/ci-configuration-for-e2e'
+      - main # - develop
+      - master
     
 jobs:
   backend_deploy:
     uses: ./.github/workflows/run-cicd-app-workflow-01-backend.yml
     secrets:
-      PAT_TOKEN: ${{secrets.PERSONAL_2}} # ${{secrets.PERSONAL_RELEASE_TOKEN}} # ${{secrets.GITHUB_TOKEN}}
+      PAT_TOKEN: ${{secrets.GITHUB_TOKEN}} # ${{secrets.PERSONAL_2}} # ${{secrets.PERSONAL_RELEASE_TOKEN}} # ${{secrets.GITHUB_TOKEN}}

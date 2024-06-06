@@ -21,19 +21,48 @@ jobs:
     steps: 
       - name: backend-steps
         run: |
-          echo 'runnung backend....'
+          echo 'runnung backend (dummy)....'
         shell: bash
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           path: garden        
+
+      - name: Serve Files (Dummy)
+        uses: Eun/http-server-action@v1
+        with:
+          directory: garden/ext/server # ${{ github.workspace }}
+          port: 8080
+          no-cache: false
+          index-files: |
+            ["index.html", "index.htm"]
+          allowed-methods: |
+            ["GET", "HEAD"]
+          content-types: |
+            {
+              "appcache": "text/cache-manifest",
+              "css": "text/css",
+              "gif": "image/gif",
+              "html": "text/html",
+              "ico": "image/x-icon",
+              "jpeg": "image/jpeg",
+              "jpg": "image/jpeg",
+              "js": "text/javascript",
+              "json": "application/json",
+              "png": "image/png",
+              "txt": "text/plain",
+              "xml": "text/xml"
+            }
+          log: "log.txt"
+          logTime: "false"
+
       - name: 4 expose-tunnel
         # if: ${{ contains(github.event.pull_request.labels.*.name, 'mobile') && github.ref_name != 'main' }}
         uses: ./garden/.github/actions/ngrok-tunnel-action
         id: expose-tunnel
         with:
           timeout: 1h
-          port: '8001'
+          port: '8080' # use 8001 to expose locally
           ngrok_authtoken: ${{ inputs.NGROK_AUTHTOKEN }}
           tunnel_type: http
           save_url_to_filename: tunnelURL.md    

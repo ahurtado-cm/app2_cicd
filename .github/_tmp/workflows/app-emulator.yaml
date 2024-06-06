@@ -1,0 +1,66 @@
+name: Emulator
+on: 
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - 'chore/ci-configuration-for-e2e'
+jobs:
+  app_emulator:
+    runs-on: macos-latest # ubuntu-latest
+    steps: 
+
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Setup Java Version
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+    
+      - uses: futureware-tech/simulator-action@v3
+        with:
+          model: 'iPhone 14'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2 
+        with:
+          flutter-version: '3.13.9'
+
+      - name: Setup Cloudsmith remote
+        run: |
+          echo 'mq6SmHNVPRQg1Aae' | dart pub token add https://dart.cloudsmith.io/commure/core-platform-testbed-stage/
+
+        shell: bash
+
+
+      - name: Create env file
+        run: |
+          pwd
+          ls -Fahl
+          touch .env
+          echo "ENVVAR=http://pepito.com" >> .env
+          cat .env
+        shell: bash
+        
+      - name: Install Dependencies
+        run: |
+          flutter pub get
+          # cd ./ios && pod install
+        shell: bash
+
+      - name: Install Dependencies (part2)
+        if: runner.os == 'macOS'
+        run: |
+          cd ./ios && pod install
+
+      - name: Run Integration Tests
+        run: flutter test integration_test/main_test.dart          
+
+      # - name: Run Unit Test
+      #   run: flutter test      
+
+      # no reference of maintenancoe of this project; lates refereces was in 2020
+      #
+      # - name: "Run UI Tests"
+      #   uses: faruktoptas/android-github-actions-emulator@1.1.0

@@ -1,0 +1,101 @@
+name: flutter-app-e2e-emulator
+# on: 
+#   workflow_call:
+inputs:
+  strongline-api-tunneling-url:
+    required: true
+    type: string
+  strongline-api-tunneling-url-envvar:
+    required: true
+    type: string
+    default: BASEURL
+  working-directory:
+    type: string
+    required: true    
+  app-repository:
+    type: string
+    required: true
+  app-repository-ref:
+    type: string
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+
+    - name: Setup Java Version
+      uses: actions/setup-java@v2
+      with:
+        distribution: 'zulu'
+        java-version: '17'
+  
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2 
+      with:
+        flutter-version: '3.13.9'
+
+    - uses: futureware-tech/simulator-action@v3
+      with:
+        model: 'iPhone 14'
+
+    - name: Setup Cloudsmith remote
+      run: |
+        echo 'mq6SmHNVPRQg1Aae' | dart pub token add https://dart.cloudsmith.io/commure/core-platform-testbed-stage/
+      shell: bash
+
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+      with:
+        repository: ${{inputs.app-repository}}
+        ref: ${{ inputs.app-repository-ref }}
+        path: ${{ inputs.working-directory }}
+
+    - name: Create env file
+      run: |
+        pwd
+        ls -Fahl
+        # mkdir -p ${{ inputs.working-directory }} && cd ${{ inputs.working-directory }}
+        touch .env
+        echo "${{inputs.strongline-api-tunneling-url-envvar}}=${{inputs.strongline-api-tunneling-url}}" >> .env
+        cat .env
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}     
+
+    - name: AppendTo env file
+      run: |
+        pwd
+        ls -Fahl
+        # mkdir -p ${{ inputs.working-directory }} && cd ${{ inputs.working-directory }}
+        touch .env
+        echo "onesignal_app_id=${{secrets.ONESIGNAL_APP_ID_STAGING}}" >> .env
+        cat .env
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}     
+
+      
+    - name: Install Dependencies
+      run: |
+        flutter pub get
+        # cd ./ios && pod install
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+
+    - name: Install Dependencies (part2)
+      if: runner.os == 'macOS'
+      run: |
+        cd ./ios && pod install
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}        
+
+    - name: Run Integration Tests
+      run: flutter test integration_test/main_test.dart          
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}        
+
+    # - name: Run Unit Test
+    #   run: flutter test      
+
+    # no reference of maintenancoe of this project; lates refereces was in 2020
+    #
+    # - name: "Run UI Tests"
+    #   uses: faruktoptas/android-github-actions-emulator@1.1.0
