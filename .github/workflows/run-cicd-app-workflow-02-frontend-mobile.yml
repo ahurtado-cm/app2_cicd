@@ -19,7 +19,7 @@ jobs:
         run: |
           echo 'running-frontend; using ...'
           echo '- repo: ${{github.repository}}'
-          echo '- ref: ${{github.ref}}'
+          echo '- ref: ${{github.event.pull_request.head.ref}}'
 
         shell: bash
       - name: check local wget
@@ -41,7 +41,7 @@ jobs:
           strongline-api-tunneling-url: ${{inputs.strongline-api-tunneling-url}}
           strongline-api-tunneling-url-envvar: "BASEURL"          
           app-repository: ${{github.repository}} # ${{inputs.app-repository}} # "ahurtado-cm/app1_flutter"
-          app-repository-ref: ${{github.ref}} # ${{inputs.app-repository-ref}}
+          app-repository-ref: ${{github.event.pull_request.head.ref}} # ${{inputs.app-repository-ref}}
           working-directory: "app4" # ${{inputs.working-directory}} # "app1-flutter"
           # PERSONAL_CHECKOUT_TOKEN: ${{ inputs.PERSONAL_CHECKOUT_TOKEN }} # secrets.
           # PERSONAL_RELEASE_TOKEN: ${{ inputs.PERSONAL_RELEASE_TOKEN }} # secrets.
