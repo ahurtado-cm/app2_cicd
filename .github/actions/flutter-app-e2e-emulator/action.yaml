@@ -18,6 +18,10 @@ inputs:
   app-repository-ref:
     type: string
     required: true
+# secrets:
+  ONESIGNAL_APP_ID_STAGING:
+    type: string
+    required: true
 
 runs:
   using: "composite"
@@ -67,7 +71,7 @@ runs:
         ls -Fahl
         # mkdir -p ${{ inputs.working-directory }} && cd ${{ inputs.working-directory }}
         touch .env
-        echo "onesignal_app_id=${{secrets.ONESIGNAL_APP_ID_STAGING}}" >> .env
+        echo "onesignal_app_id=${{inputs.ONESIGNAL_APP_ID_STAGING}}" >> .env
         cat .env
       shell: bash
       working-directory: ${{ inputs.working-directory }}     

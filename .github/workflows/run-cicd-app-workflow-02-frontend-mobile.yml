@@ -17,7 +17,10 @@ jobs:
     steps:
       - name: frontend-steps
         run: |
-          echo 'running-frontend...'
+          echo 'running-frontend; using ...'
+          echo '- repo: ${{github.repository}}'
+          echo '- ref: ${{github.ref}}'
+
         shell: bash
       - name: check local wget
         # if: ${{ contains(github.event.pull_request.labels.*.name, 'mobile') && github.ref_name != 'main' }}
@@ -44,6 +47,9 @@ jobs:
           # PERSONAL_RELEASE_TOKEN: ${{ inputs.PERSONAL_RELEASE_TOKEN }} # secrets.
           # release-tag: ${{inputs.release-tag}} # "v0.0.1"
           # release-repository: ${{inputs.release-repository}}
+        # secrets: 
+          ONESIGNAL_APP_ID_STAGING: ${{secrets.ONESIGNAL_APP_ID_STAGING}}
+
       
 
       # - - - - - - - - - - - - - - - - - - - - - -

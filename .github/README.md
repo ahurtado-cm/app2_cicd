@@ -15,4 +15,4 @@ or in project settings
   general / code and automation / actions/ general
   set wojkflow permissions to read and write (to work with GITHUB_TOKEN)
   
-crete secrets required by9 the project
+crete secrets required by the project.
